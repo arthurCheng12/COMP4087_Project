@@ -15,12 +15,9 @@ public class Block {
     public Block(int index, double timestamp, String previousHash, String data) {
         this.index = index;
         this.timestamp = timestamp;
-        this.previousHash = previousHash;
         this.data = data;
         this.hash = calculateHash(this.index, this.timestamp, this.previousHash, this.data);
-        if(index == 0) {
-            this.previousHash = "th1515f1r5t810ck";
-        }
+        this.previousHash = previousHash;
     }
 
     public String calculateHash(int index, double timestamp, String previousHash, String data) {

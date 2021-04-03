@@ -4,36 +4,35 @@ import javax.xml.bind.DatatypeConverter;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.util.Date;
-import java.util.Iterator;
 import java.util.Vector;
 
 public class Main {
 
     public static void main(String[] args) {
 	// write your code here
-        System.out.println("Program Start!");
-        Vector<Block> blockChain = new Vector<Block>();
+        System.out.println("Block Chain Start!");
+        Vector<Block> chain = new Vector<Block>();
 
-        Block block0 = new Block(0, new Date().getTime() / 1000, "", "This is first block");
-        blockChain.add(block0);
+        Block block0 = new Block(0, new Date().getTime() / 1000, "0", "This is the genosis block");
+        chain.add(block0);
 
-        Block block1 = generateNextBlock("Arthur -> Ben, 5, Cola", blockChain);
+        Block block1 = generateNextBlock("Arthur -> Ben, 5, Cola", chain);
         if(isValidNewBlock(block1, block0)) {
-            blockChain.add(block1);
+            chain.add(block1);
         }
 
-        Block block2 = generateNextBlock("Ben -> Cecilia, 2, Pen", blockChain);
-        if(isValidNewBlock(block2, block1)) {
-            blockChain.add(block2);
-        }
-
-        for (int i = 0; i < blockChain.size(); i++) {
-            Block block  = blockChain.get(i);
-            System.out.println("index: " + block.index + ", timestamp: " + block.timestamp + ", previousHash: " + block.previousHash + ", data: " + block.data);
+        for (int i = 0; i < chain.size(); i++) {
+            Block block  = chain.get(i);
+            System.out.println("index: " + block.index);
+            System.out.println("timestamp: " + block.timestamp);
+            System.out.println("data: " + block.data);
+            System.out.println("previousHash: " + block.previousHash);
+            System.out.println("hash: " + block.hash);
+            System.out.println("------------------------------------------------------------------------");
         }
     }
 
-    public static String hash(Block block) {
+    public static String hashForBlock(Block block) {
         try{
             MessageDigest digest = MessageDigest.getInstance("SHA-256");
             String blockInformation = (block.index + block.previousHash + block.timestamp  + block.data);
@@ -52,24 +51,28 @@ public class Main {
         }
     }
 
-    public static Block generateNextBlock(String blockData, Vector<Block> blockChain) {
-        Block previousBlock = getLatestBlock(blockChain);
+    public static Block generateNextBlock(String blockData, Vector<Block> chain) {
+        Block previousBlock = getLatestBlock(chain);
         int nextIndex = previousBlock.index + 1;
         double nextTimestamp = new Date().getTime() / 1000;
         return new Block(nextIndex, nextTimestamp, previousBlock.hash, blockData);
     }
 
-    public static Block getLatestBlock(Vector<Block> blockChain) {
-        return blockChain.lastElement();
+    public static Block getLatestBlock(Vector<Block> chain) {
+        return chain.lastElement();
     }
 
     public static boolean isValidNewBlock (Block newBlock, Block previousBlock) {
-        if(previousBlock.index + 1 != newBlock.index)
+        if(previousBlock.index + 1 != newBlock.index){
+            System.out.println("invalid index");
             return false;
-        else if (previousBlock.hash != newBlock.previousHash)
+        } else if (previousBlock.hash != newBlock.previousHash) {
+            System.out.println("invalid previoushash");
             return false;
-        else if (hash(previousBlock) == newBlock.hash)
+        } else if (hashForBlock(newBlock) != newBlock.hash) {
+            System.out.println("invalid hash");
             return false;
+        }
         else return true;
     }
 
