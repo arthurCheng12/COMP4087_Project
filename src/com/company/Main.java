@@ -18,10 +18,14 @@ public class Main {
         blockChain.add(block0);
 
         Block block1 = generateNextBlock("Arthur -> Ben, 5, Cola", blockChain);
-        blockChain.add(block1);
+        if(isValidNewBlock(block1, block0)) {
+            blockChain.add(block1);
+        }
 
         Block block2 = generateNextBlock("Ben -> Cecilia, 2, Pen", blockChain);
-        blockChain.add(block2);
+        if(isValidNewBlock(block2, block1)) {
+            blockChain.add(block2);
+        }
 
         for (int i = 0; i < blockChain.size(); i++) {
             Block block  = blockChain.get(i);
@@ -64,7 +68,7 @@ public class Main {
             return false;
         else if (previousBlock.hash != newBlock.previousHash)
             return false;
-        else if (hash(newBlock) != newBlock.hash)
+        else if (hash(previousBlock) == newBlock.hash)
             return false;
         else return true;
     }
