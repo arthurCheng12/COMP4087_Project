@@ -41,19 +41,4 @@ public class Block {
             throw new RuntimeException(e);
         }
     }
-
-    public static boolean hashMatchesDifficulty(String hash, int difficulty) {
-        byte[] myBytes = hash.getBytes(StandardCharsets.UTF_8);
-        String hashInBinary = DatatypeConverter.printHexBinary(myBytes);
-        String requiredPrefix = repeat("0", difficulty);
-        return hashInBinary.startsWith(requiredPrefix);
-    }
-
-    public static String repeat(String str , int difficulty) {
-        String result = "";
-        for(int i = 0; i < difficulty; i++) {
-            result += str;
-        }
-        return result;
-    }
 }
