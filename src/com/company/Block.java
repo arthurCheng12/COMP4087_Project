@@ -1,7 +1,5 @@
 package com.company;
 import java.nio.charset.StandardCharsets;
-import java.util.*;
-import java.sql.Timestamp;
 import java.security.MessageDigest;
 
 public class Block {
@@ -11,14 +9,15 @@ public class Block {
     public String previousHash;
     public String data;
 
-    public Block() {}
-
     public Block(int index, double timestamp, String previousHash, String data) {
         this.index = index;
         this.timestamp = timestamp;
         this.previousHash = previousHash;
         this.data = data;
         this.hash = hash(this.index, this.timestamp, this.previousHash, this.data);
+        if(index == 0) {
+            this.previousHash = "th1515f1r5t810ck";
+        }
     }
 
     public String hash(int index, double timestamp, String previousHash, String data) {
