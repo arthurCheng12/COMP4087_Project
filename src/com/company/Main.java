@@ -1,5 +1,7 @@
 package com.company;
 
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.Vector;
@@ -26,6 +28,25 @@ public class Main {
         }
     }
 
+    public static String hash(Block block) {
+        try{
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            String blockInformation = (block.index + block.previousHash + block.timestamp  + block.data);
+            byte[] hash = digest.digest(blockInformation.getBytes(StandardCharsets.UTF_8));
+            StringBuffer hexString = new StringBuffer();
+            for (int i = 0; i < hash.length; i++) {
+                String hex = Integer.toHexString(0xff & hash[i]);
+                if (hex.length() == 1) {
+                    hexString.append('0');
+                }
+                hexString.append(hex);
+            }
+            return hexString.toString();
+        }catch(Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     public static Block generateNextBlock(String blockData, Vector<Block> blockChain) {
         Block previousBlock = getLatestBlock(blockChain);
         int nextIndex = previousBlock.index + 1;
@@ -35,6 +56,16 @@ public class Main {
 
     public static Block getLatestBlock(Vector<Block> blockChain) {
         return blockChain.lastElement();
+    }
+
+    public static boolean isValidNewBlock (Block newBlock, Block previousBlock) {
+        if(previousBlock.index + 1 != newBlock.index)
+            return false;
+        else if (previousBlock.hash != newBlock.previousHash)
+            return false;
+        else if (hash(newBlock) != newBlock.hash)
+            return false;
+        else return true;
     }
 
 }
