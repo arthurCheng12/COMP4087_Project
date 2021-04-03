@@ -21,15 +21,7 @@ public class Main {
             chain.add(block1);
         }
 
-        for (int i = 0; i < chain.size(); i++) {
-            Block block  = chain.get(i);
-            System.out.println("index: " + block.index);
-            System.out.println("timestamp: " + block.timestamp);
-            System.out.println("data: " + block.data);
-            System.out.println("previousHash: " + block.previousHash);
-            System.out.println("hash: " + block.hash);
-            System.out.println("------------------------------------------------------------------------");
-        }
+        printBlockChain(chain);
     }
 
     public static String hashForBlock(Block block) {
@@ -89,6 +81,18 @@ public class Main {
             result += str;
         }
         return result;
+    }
+
+    public static void printBlockChain(Vector<Block> chain) {
+        for (int i = 0; i < chain.size(); i++) {
+            Block block  = chain.get(i);
+            System.out.println("index: " + block.index);
+            System.out.println("timestamp: " + block.timestamp);
+            System.out.println("data: " + block.data);
+            System.out.println("previousHash: " + block.previousHash);
+            System.out.println("hash: " + block.hash);
+            System.out.println("------------------------------------------------------------------------");
+        }
     }
 
 }
