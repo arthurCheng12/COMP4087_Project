@@ -9,8 +9,8 @@ public class Transaction {
     public TxIn txIns;
     public TxOut txOuts;
 
-    public Transaction(TxOut txOuts) {
-        this.txIns = new TxIn();
+    public Transaction(TxIn txIns, TxOut txOuts) {
+        this.txIns = txIns;
         this.txOuts = txOuts;
         this.id = getTransactionId(this);
     }
@@ -59,5 +59,12 @@ public class Transaction {
         public String txOutId;
         public int txOutIndex;
         public String signature;
+
+        public TxIn(String txOutId, int txOutIndex) {
+            this.txOutId = txOutId;
+            this.txOutIndex = txOutIndex;
+            this.signature = "Copy from RSA plz";
+        }
     }
+
 }

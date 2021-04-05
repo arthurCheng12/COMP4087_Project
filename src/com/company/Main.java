@@ -18,19 +18,19 @@ public class Main {
         Transaction transaction;
         String blockData;
 
-        transaction = createTransaction("127.0.0.1:3000", 5);
+        transaction = createTransaction("127.0.0.1:3000", 50, "127.0.0.1:3000", 5);
         blockData = "This is the gene block";
         Block block = new Block(0, new Date().getTime() / 1000, "th1515f1r5t810ckh45h", blockData, transaction, DIFFICULTY_ADJUSTMENT_INTERVAL);
         chain.add(block);
 
-        transaction = createTransaction("127.0.0.1:3001", 5);
+        transaction = createTransaction("127.0.0.1:3000", 45, "127.0.0.1:3001", 5);
         blockData = "Gun";
         block = findBlock(blockData, transaction, chain, DIFFICULTY_ADJUSTMENT_INTERVAL, BLOCK_GENERATION_INTERVAL);
         if (isValidNewBlock(block, chain.lastElement())) {
             chain.add(block);
         }
 
-        transaction = createTransaction("127.0.0.1:3002", 5);
+        transaction = createTransaction("127.0.0.1:3000", 40,"127.0.0.1:3002", 5);
         blockData = "420";
         block = findBlock(blockData, transaction, chain, DIFFICULTY_ADJUSTMENT_INTERVAL, BLOCK_GENERATION_INTERVAL);
         if (isValidNewBlock(block, chain.lastElement())) {
@@ -40,9 +40,10 @@ public class Main {
         printBlockChain(chain);
     }
 
-    public static Transaction createTransaction(String address, double amout) {
-        Transaction.TxOut txOut = new Transaction.TxOut(address, amout);
-        return new Transaction(txOut);
+    public static Transaction createTransaction(String txOutId, int txOutIndex, String address, double amount) {
+        Transaction.TxIn txIn = new Transaction.TxIn(txOutId, txOutIndex);
+        Transaction.TxOut txOut = new Transaction.TxOut(address, amount);
+        return new Transaction(txIn, txOut);
     }
 
     public static int getAdjustedDifficulty(Block latestBlock, Vector<Block> chain, int DIFFICULTY_ADJUSTMENT_INTERVAL, int BLOCK_GENERATION_INTERVAL) {
