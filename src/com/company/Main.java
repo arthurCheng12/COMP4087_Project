@@ -15,17 +15,24 @@ public class Main {
         int BLOCK_GENERATION_INTERVAL = 0;
         int DIFFICULTY_ADJUSTMENT_INTERVAL = 8;
         Vector<Block> chain = new Vector<Block>();
+        Transaction transaction;
+        String blockData;
 
-        Transaction transaction = createTransaction("Arthur", 50);
-        Block block = new Block(0, new Date().getTime() / 1000, "th1515f1r5t810ckh45h", "This is the gene block", transaction, DIFFICULTY_ADJUSTMENT_INTERVAL);
+        transaction = createTransaction("127.0.0.1:3000", 5);
+        blockData = "This is the gene block";
+        Block block = new Block(0, new Date().getTime() / 1000, "th1515f1r5t810ckh45h", blockData, transaction, DIFFICULTY_ADJUSTMENT_INTERVAL);
         chain.add(block);
 
-        block = findBlock("Cola", transaction, chain, DIFFICULTY_ADJUSTMENT_INTERVAL, BLOCK_GENERATION_INTERVAL);
+        transaction = createTransaction("127.0.0.1:3001", 5);
+        blockData = "Gun";
+        block = findBlock(blockData, transaction, chain, DIFFICULTY_ADJUSTMENT_INTERVAL, BLOCK_GENERATION_INTERVAL);
         if (isValidNewBlock(block, chain.lastElement())) {
             chain.add(block);
         }
 
-        block = findBlock("Pen", transaction, chain, DIFFICULTY_ADJUSTMENT_INTERVAL, BLOCK_GENERATION_INTERVAL);
+        transaction = createTransaction("127.0.0.1:3002", 5);
+        blockData = "420";
+        block = findBlock(blockData, transaction, chain, DIFFICULTY_ADJUSTMENT_INTERVAL, BLOCK_GENERATION_INTERVAL);
         if (isValidNewBlock(block, chain.lastElement())) {
             chain.add(block);
         }
