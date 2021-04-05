@@ -1,7 +1,8 @@
 package com.company;
+
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
-import javax.xml.bind.DatatypeConverter;
+import java.util.concurrent.ThreadLocalRandom;
 
 public class Block {
     public int index;
@@ -12,18 +13,20 @@ public class Block {
     public int difficulty;
     public int nonce;
 
-    public Block(int index, double timestamp, String previousHash, String data) {
+    public Block(int index, double timestamp, String previousHash, String data, int difficulty) {
         this.index = index;
         this.timestamp = timestamp;
-        this.data = data;
         this.previousHash = previousHash;
-        this.hash = calculateHash(this.index, this.timestamp, this.previousHash, this.data);
+        this.data = data;
+        this.difficulty = difficulty;
+        this.nonce = ThreadLocalRandom.current().nextInt();
+        this.hash = calculateHash(this.index, this.timestamp, this.previousHash, this.data, this.nonce);
     }
 
-    public String calculateHash(int index, double timestamp, String previousHash, String data) {
-        try{
+    public String calculateHash(int index, double timestamp, String previousHash, String data, int nonce) {
+        try {
             MessageDigest digest = MessageDigest.getInstance("SHA-256");
-            String blockInformation = (index + previousHash + timestamp  + data);
+            String blockInformation = (index + previousHash + timestamp + data + nonce);
             byte[] hash = digest.digest(blockInformation.getBytes(StandardCharsets.UTF_8));
             StringBuffer hexString = new StringBuffer();
             for (int i = 0; i < hash.length; i++) {
@@ -34,7 +37,7 @@ public class Block {
                 hexString.append(hex);
             }
             return hexString.toString();
-        }catch(Exception e) {
+        } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
