@@ -12,18 +12,19 @@ public class Main {
     public static void main(String[] args) {
         // write your code here
         System.out.println("Block Chain Start!");
-        int difficulty = 8;
+        int BLOCK_GENERATION_INTERVAL = 0;
+        int DIFFICULTY_ADJUSTMENT_INTERVAL = 8;
         Vector<Block> chain = new Vector<Block>();
 
-        Block block = new Block(0, new Date().getTime() / 1000, "th1515f1r5t810ckh45h", "This is the genosis block", difficulty);
+        Block block = new Block(0, new Date().getTime() / 1000, "th1515f1r5t810ckh45h", "This is the gene block", DIFFICULTY_ADJUSTMENT_INTERVAL);
         chain.add(block);
 
-        block = findBlock("Arthur -> Ben, 5, Cola", chain, difficulty);
+        block = findBlock("Arthur -> Ben, 5, Cola", chain, DIFFICULTY_ADJUSTMENT_INTERVAL, BLOCK_GENERATION_INTERVAL);
         if (isValidNewBlock(block, chain.lastElement())) {
             chain.add(block);
         }
 
-        block = findBlock("Ben -> Cecilia, 3, Pen", chain, difficulty);
+        block = findBlock("Ben -> Cecilia, 3, Pen", chain, DIFFICULTY_ADJUSTMENT_INTERVAL, BLOCK_GENERATION_INTERVAL);
         if (isValidNewBlock(block, chain.lastElement())) {
             chain.add(block);
         }
@@ -31,8 +32,31 @@ public class Main {
         printBlockChain(chain);
     }
 
-    public static Block findBlock(String blockData, Vector<Block> chain, int difficulty) {
+    public static int getAdjustedDifficulty(Block latestBlock, Vector<Block> chain, int DIFFICULTY_ADJUSTMENT_INTERVAL, int BLOCK_GENERATION_INTERVAL) {
+        Block prevAdjustmentBlock = chain.get(chain.size() - DIFFICULTY_ADJUSTMENT_INTERVAL);
+        int timeExpected = BLOCK_GENERATION_INTERVAL * DIFFICULTY_ADJUSTMENT_INTERVAL;
+        double timeTaken = latestBlock.timestamp - prevAdjustmentBlock.timestamp;
+        if (timeTaken < timeExpected / 2) {
+            return prevAdjustmentBlock.difficulty + 1;
+        } else if (timeTaken > timeExpected * 2) {
+            return prevAdjustmentBlock.difficulty - 1;
+        } else {
+            return prevAdjustmentBlock.difficulty;
+        }
+    }
+
+    public static int getDifficulty(Vector<Block> chain, int DIFFICULTY_ADJUSTMENT_INTERVAL, int BLOCK_GENERATION_INTERVAL) {
+        Block lastBlock = chain.lastElement();
+        if (lastBlock.index % DIFFICULTY_ADJUSTMENT_INTERVAL == 0 && lastBlock.index != 0) {
+            return getAdjustedDifficulty(lastBlock, chain, DIFFICULTY_ADJUSTMENT_INTERVAL, BLOCK_GENERATION_INTERVAL);
+        } else {
+            return lastBlock.difficulty;
+        }
+    }
+
+    public static Block findBlock(String blockData, Vector<Block> chain, int DIFFICULTY_ADJUSTMENT_INTERVAL, int BLOCK_GENERATION_INTERVAL) {
         while (true) {
+            int difficulty = getDifficulty(chain, DIFFICULTY_ADJUSTMENT_INTERVAL, BLOCK_GENERATION_INTERVAL);
             Block newBlock = generateNextBlock(blockData, chain, difficulty);
             if (hashMatchesDifficulty(newBlock.hash, difficulty)) {
                 return newBlock;
