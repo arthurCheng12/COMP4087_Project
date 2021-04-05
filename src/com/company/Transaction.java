@@ -1,30 +1,61 @@
 package com.company;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.util.HashMap;
+import java.util.Map;
 
 public class Transaction {
     public String id;
-    public TxIn[] txIns;
-    public TxOut[] txOuts;
+    public TxIn txIns;
+    public TxOut txOuts;
 
-    public Transaction(String id, TxIn[] txIns, TxOut[] txOuts) {
-        this.id = id;
-        this.txIns = txIns;
+    public Transaction(TxOut txOuts) {
+        this.txIns = new TxIn();
         this.txOuts = txOuts;
+        this.id = getTransactionId(this);
     }
 
-    public static String getTransactionId() {
-        return "";
+    public static String getTransactionId(Transaction transaction) {
+        TxIn txIn = transaction.txIns;
+        String txInContent = txIn.txOutId + txIn.txOutIndex;
+        txInContent.replace(" ", "");
+
+        TxOut txOut = transaction.txOuts;
+        String txOutContent = txOut.address + txOut.amount;
+        txOutContent.replace(" ", "");
+
+        return hash(txInContent, txOutContent);
     }
 
-    class TxOut {
+    public static String hash(String txInContent, String txOutContent ) {
+        try {
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            String blockInformation = (txInContent + txOutContent);
+            byte[] hash = digest.digest(blockInformation.getBytes(StandardCharsets.UTF_8));
+            StringBuffer hexString = new StringBuffer();
+            for (int i = 0; i < hash.length; i++) {
+                String hex = Integer.toHexString(0xff & hash[i]);
+                if (hex.length() == 1) {
+                    hexString.append('0');
+                }
+                hexString.append(hex);
+            }
+            return hexString.toString();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    static class TxOut {
         public String address;
-        public int amount;
-        TxOut(String address, int amount) {
+        public double amount;
+        TxOut(String address, double amount) {
             this.address = address;
             this.amount = amount;
         }
     }
 
-    class TxIn {
+    static class TxIn {
         public String txOutId;
         public int txOutIndex;
         public String signature;

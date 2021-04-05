@@ -16,20 +16,26 @@ public class Main {
         int DIFFICULTY_ADJUSTMENT_INTERVAL = 8;
         Vector<Block> chain = new Vector<Block>();
 
-        Block block = new Block(0, new Date().getTime() / 1000, "th1515f1r5t810ckh45h", "This is the gene block", DIFFICULTY_ADJUSTMENT_INTERVAL);
+        Transaction transaction = createTransaction("Arthur", 50);
+        Block block = new Block(0, new Date().getTime() / 1000, "th1515f1r5t810ckh45h", "This is the gene block", transaction, DIFFICULTY_ADJUSTMENT_INTERVAL);
         chain.add(block);
 
-        block = findBlock("Arthur -> Ben, 5, Cola", chain, DIFFICULTY_ADJUSTMENT_INTERVAL, BLOCK_GENERATION_INTERVAL);
+        block = findBlock("Cola", transaction, chain, DIFFICULTY_ADJUSTMENT_INTERVAL, BLOCK_GENERATION_INTERVAL);
         if (isValidNewBlock(block, chain.lastElement())) {
             chain.add(block);
         }
 
-        block = findBlock("Ben -> Cecilia, 3, Pen", chain, DIFFICULTY_ADJUSTMENT_INTERVAL, BLOCK_GENERATION_INTERVAL);
+        block = findBlock("Pen", transaction, chain, DIFFICULTY_ADJUSTMENT_INTERVAL, BLOCK_GENERATION_INTERVAL);
         if (isValidNewBlock(block, chain.lastElement())) {
             chain.add(block);
         }
 
         printBlockChain(chain);
+    }
+
+    public static Transaction createTransaction(String address, double amout) {
+        Transaction.TxOut txOut = new Transaction.TxOut(address, amout);
+        return new Transaction(txOut);
     }
 
     public static int getAdjustedDifficulty(Block latestBlock, Vector<Block> chain, int DIFFICULTY_ADJUSTMENT_INTERVAL, int BLOCK_GENERATION_INTERVAL) {
@@ -54,10 +60,10 @@ public class Main {
         }
     }
 
-    public static Block findBlock(String blockData, Vector<Block> chain, int DIFFICULTY_ADJUSTMENT_INTERVAL, int BLOCK_GENERATION_INTERVAL) {
+    public static Block findBlock(String blockData, Transaction transaction, Vector<Block> chain, int DIFFICULTY_ADJUSTMENT_INTERVAL, int BLOCK_GENERATION_INTERVAL) {
         while (true) {
             int difficulty = getDifficulty(chain, DIFFICULTY_ADJUSTMENT_INTERVAL, BLOCK_GENERATION_INTERVAL);
-            Block newBlock = generateNextBlock(blockData, chain, difficulty);
+            Block newBlock = generateNextBlock(blockData, transaction, chain, difficulty);
             if (hashMatchesDifficulty(newBlock.hash, difficulty)) {
                 return newBlock;
             }
@@ -83,11 +89,11 @@ public class Main {
         }
     }
 
-    public static Block generateNextBlock(String blockData, Vector<Block> chain, int difficulty) {
+    public static Block generateNextBlock(String blockData, Transaction transaction, Vector<Block> chain, int difficulty) {
         Block previousBlock = chain.lastElement();
         int nextIndex = previousBlock.index + 1;
         double nextTimestamp = new Date().getTime() / 1000;
-        return new Block(nextIndex, nextTimestamp, previousBlock.hash, blockData, difficulty);
+        return new Block(nextIndex, nextTimestamp, previousBlock.hash, blockData, transaction, difficulty);
     }
 
     public static boolean isValidNewBlock(Block newBlock, Block previousBlock) {
@@ -162,6 +168,7 @@ public class Main {
             System.out.println("index: " + block.index);
             System.out.println("timestamp: " + block.timestamp);
             System.out.println("data: " + block.data);
+            System.out.println("transactionID: " + block.transaction.id);
             System.out.println("previousHash: " + block.previousHash);
             System.out.println("hash: " + block.hash);
             System.out.println("------------------------------------------------------------------------");
