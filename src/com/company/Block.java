@@ -16,8 +16,8 @@ public class Block {
         this.index = index;
         this.timestamp = timestamp;
         this.data = data;
-        this.hash = calculateHash(this.index, this.timestamp, this.previousHash, this.data);
         this.previousHash = previousHash;
+        this.hash = calculateHash(this.index, this.timestamp, this.previousHash, this.data);
     }
 
     public String calculateHash(int index, double timestamp, String previousHash, String data) {

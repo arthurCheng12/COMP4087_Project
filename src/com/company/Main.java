@@ -13,12 +13,17 @@ public class Main {
         System.out.println("Block Chain Start!");
         Vector<Block> chain = new Vector<Block>();
 
-        Block block0 = new Block(0, new Date().getTime() / 1000, "0", "This is the genosis block");
+        Block block0 = new Block(0, new Date().getTime() / 1000, "th1515f1r5t810ckh45h", "This is the genosis block");
         chain.add(block0);
 
         Block block1 = generateNextBlock("Arthur -> Ben, 5, Cola", chain);
         if(isValidNewBlock(block1, block0)) {
             chain.add(block1);
+        }
+
+        Block block2 = generateNextBlock("Ben -> Cecilia, 3, Pen", chain);
+        if(isValidNewBlock(block2, block1)) {
+            chain.add(block2);
         }
 
         printBlockChain(chain);
@@ -61,7 +66,7 @@ public class Main {
         } else if (previousBlock.hash != newBlock.previousHash) {
             System.out.println("invalid previoushash");
             return false;
-        } else if (hashForBlock(newBlock) != newBlock.hash) {
+        } else if (!hashForBlock(newBlock).equals(newBlock.hash)) {
             System.out.println("invalid hash");
             return false;
         }
