@@ -1,9 +1,14 @@
 package com.company;
 
+import sun.misc.BASE64Encoder;
+
 import javax.xml.bind.DatatypeConverter;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
+import java.security.KeyPair;
 import java.security.MessageDigest;
+import java.security.PrivateKey;
+import java.security.PublicKey;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Vector;
@@ -27,6 +32,7 @@ public class Main {
         blockData = "Gun";
         block = findBlock(blockData, transaction, chain, DIFFICULTY_ADJUSTMENT_INTERVAL, BLOCK_GENERATION_INTERVAL);
         if (isValidNewBlock(block, chain.lastElement())) {
+            MintCoinTransaction();
             chain.add(block);
         }
 
@@ -34,6 +40,7 @@ public class Main {
         blockData = "420";
         block = findBlock(blockData, transaction, chain, DIFFICULTY_ADJUSTMENT_INTERVAL, BLOCK_GENERATION_INTERVAL);
         if (isValidNewBlock(block, chain.lastElement())) {
+            MintCoinTransaction();
             chain.add(block);
         }
 
@@ -41,9 +48,24 @@ public class Main {
     }
 
     public static Transaction createTransaction(String txOutId, int txOutIndex, String address, double amount) throws Exception{
-        Transaction.TxIn txIn = new Transaction.TxIn(txOutId, txOutIndex);
         Transaction.TxOut txOut = new Transaction.TxOut(address, amount);
+        String data = address + amount;
+        KeyPair keyPair = RSASignUtils.generateKeyPair();
+        PublicKey pubKey = keyPair.getPublic();
+        PrivateKey priKey = keyPair.getPrivate();
+        byte[] signInfo = RSASignUtils.sign(data.getBytes(), priKey);
+        String signature = new BASE64Encoder().encode(signInfo);;
+        Transaction.TxIn txIn = new Transaction.TxIn(txOutId, txOutIndex, signature);
+
+        boolean verify = RSASignUtils.verify(data.getBytes(), signInfo, pubKey);
+
+        if (verify) {
+            System.out.println("Verify Status " + verify);
+        } else {
+            System.out.println("Not verified ");
+        }
         return new Transaction(txIn, txOut);
+
     }
 
     public static int getAdjustedDifficulty(Block latestBlock, Vector<Block> chain, int DIFFICULTY_ADJUSTMENT_INTERVAL, int BLOCK_GENERATION_INTERVAL) {
@@ -181,6 +203,11 @@ public class Main {
             System.out.println("hash: " + block.hash);
             System.out.println("------------------------------------------------------------------------");
         }
+    }
+
+    public static void MintCoinTransaction() {
+        // Mint Coin Transaction
+        Transaction.TxOut txout = new Transaction.TxOut("127.0.0.1:3001", 50);
     }
 
 }

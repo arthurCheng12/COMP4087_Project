@@ -14,7 +14,7 @@ public class Transaction {
     public TxIn txIns;
     public TxOut txOuts;
 
-    public Transaction(TxIn txIns, TxOut txOuts) {
+    public Transaction(TxIn txIns, TxOut txOuts) throws Exception {
         this.txIns = txIns;
         this.txOuts = txOuts;
         this.id = getTransactionId(this);
@@ -65,33 +65,13 @@ public class Transaction {
         public int txOutIndex;
         public String signature;
 
-        public TxIn(String txOutId, int txOutIndex) throws Exception {
+        public TxIn(String txOutId, int txOutIndex, String signature) throws Exception {
             this.txOutId = txOutId;
             this.txOutIndex = txOutIndex;
-            this.signature = genRSASign(txOutId, txOutIndex);
+            this.signature = signature;
         }
 
-        public String genRSASign(String txOutId, int txOutIndex) throws Exception {
-            KeyPair keyPair = RSASignUtils.generateKeyPair();
-            PublicKey pubKey = keyPair.getPublic();
-            PrivateKey priKey = keyPair.getPrivate();
 
-            String data = txOutId + txOutIndex;
-            byte[] signInfo = RSASignUtils.sign(data.getBytes(), priKey);
-            boolean verify = RSASignUtils.verify(data.getBytes(), signInfo, pubKey);
-
-            System.out.println("Line 84 - Public Key : " + pubKey);
-            System.out.println("Line 85 - Private Key : " + priKey);
-
-            if (verify) {
-                // System.out.println("Line 84 Verify! \n : " + new BASE64Encoder().encode(signInfo));
-                return new BASE64Encoder().encode(signInfo);
-            } else {
-                // System.out.println("Line 87 Not Verify!");
-                return "No RSA Sign";
-            }
-
-        }
 
 
     }
