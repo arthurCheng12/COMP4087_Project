@@ -11,6 +11,8 @@ import java.util.Map;
 
 public class Transaction {
     public String id;
+
+    // here should be vector[] txIns and txOuts, see ppt 22
     public TxIn txIns;
     public TxOut txOuts;
 
@@ -50,6 +52,9 @@ public class Transaction {
             throw new RuntimeException(e);
         }
     }
+
+    //Ben
+
 
     static class TxOut {
         public String address;

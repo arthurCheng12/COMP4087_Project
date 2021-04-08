@@ -14,8 +14,9 @@ import java.util.HashMap;
 import java.util.Vector;
 
 public class Main {
-    static final int BLOCK_GENERATION_INTERVAL = 0;
+    static final int BLOCK_GENERATION_INTERVAL = 30;
     static final int DIFFICULTY_ADJUSTMENT_INTERVAL = 8;
+    static final int COINBASE_AMOUNT = 50;
     static Vector<Block> chain = new Vector<Block>();
 
     public static void main(String[] args) throws Exception{
@@ -47,6 +48,9 @@ public class Main {
         }
 
         printBlockChain(chain);
+
+        // a user have a address, and keep mining block
+//        User user1 = new User()
     }
 
     public static Transaction createTransaction(String txOutId, int txOutIndex, String address, double amount) throws Exception{
@@ -70,7 +74,7 @@ public class Main {
 
     }
 
-    public static int getAdjustedDifficulty(Block latestBlock, Vector<Block> chain, int DIFFICULTY_ADJUSTMENT_INTERVAL, int BLOCK_GENERATION_INTERVAL) {
+    public static int getAdjustedDifficulty(Block latestBlock, Vector<Block> chain) {
         Block prevAdjustmentBlock = chain.get(chain.size() - DIFFICULTY_ADJUSTMENT_INTERVAL);
         int timeExpected = BLOCK_GENERATION_INTERVAL * DIFFICULTY_ADJUSTMENT_INTERVAL;
         double timeTaken = latestBlock.timestamp - prevAdjustmentBlock.timestamp;
@@ -83,10 +87,10 @@ public class Main {
         }
     }
 
-    public static int getDifficulty(Vector<Block> chain, int DIFFICULTY_ADJUSTMENT_INTERVAL, int BLOCK_GENERATION_INTERVAL) {
+    public static int getDifficulty(Vector<Block> chain) {
         Block lastBlock = chain.lastElement();
         if (lastBlock.index % DIFFICULTY_ADJUSTMENT_INTERVAL == 0 && lastBlock.index != 0) {
-            return getAdjustedDifficulty(lastBlock, chain, DIFFICULTY_ADJUSTMENT_INTERVAL, BLOCK_GENERATION_INTERVAL);
+            return getAdjustedDifficulty(lastBlock, chain);
         } else {
             return lastBlock.difficulty;
         }
@@ -94,7 +98,7 @@ public class Main {
 
     public static Block findBlock(String blockData, Transaction transaction, Vector<Block> chain, int DIFFICULTY_ADJUSTMENT_INTERVAL, int BLOCK_GENERATION_INTERVAL) {
         while (true) {
-            int difficulty = getDifficulty(chain, DIFFICULTY_ADJUSTMENT_INTERVAL, BLOCK_GENERATION_INTERVAL);
+            int difficulty = getDifficulty(chain);
             Block newBlock = generateNextBlock(blockData, transaction, chain, difficulty);
             if (hashMatchesDifficulty(newBlock.hash, difficulty)) {
                 return newBlock;
@@ -102,94 +106,32 @@ public class Main {
         }
     }
 
-    // Ben
-    public static String calculateHash(int index, String previousHash, double timestamp, String data) {
-        try {
-            MessageDigest digest = MessageDigest.getInstance("SHA-256");
-//            String blockInformation = (index + previousHash + timestamp + data + nonce);
-            String blockInformation = (index + previousHash + timestamp + data);
-            byte[] hash = digest.digest(blockInformation.getBytes(StandardCharsets.UTF_8));
-
-            StringBuffer hexString = new StringBuffer();
-            for (int i = 0; i < hash.length; i++) {
-                String hex = Integer.toHexString(0xff & hash[i]);
-                if (hex.length() == 1) {
-                    hexString.append('0');
-                }
-                hexString.append(hex);
-            }
-
-            return hexString.toString();
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public static String calculateHash(int index, String previousHash, double timestamp, String data, int difficulty, int nonce) {
-        try {
-            MessageDigest digest = MessageDigest.getInstance("SHA-256");
-//            String blockInformation = (index + previousHash + timestamp + data + nonce);
-            String blockInformation = (index + previousHash + timestamp + data);
-            byte[] hash = digest.digest(blockInformation.getBytes(StandardCharsets.UTF_8));
-
-            StringBuffer hexString = new StringBuffer();
-            for (int i = 0; i < hash.length; i++) {
-                String hex = Integer.toHexString(0xff & hash[i]);
-                if (hex.length() == 1) {
-                    hexString.append('0');
-                }
-                hexString.append(hex);
-            }
-
-            return hexString.toString();
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-        // Ben
-    public static String SHA256(String message){
-        try {
-            MessageDigest digest = MessageDigest.getInstance("SHA-256");
-            byte[] hash = digest.digest(message.getBytes(StandardCharsets.UTF_8));
-
-            StringBuffer hexString = new StringBuffer();
-            for (int i = 0; i < hash.length; i++) {
-                String hex = Integer.toHexString(0xff & hash[i]);
-                if (hex.length() == 1) {
-                    hexString.append('0');
-                }
-                hexString.append(hex);
-            }
-
-            return hexString.toString();
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
 
     // Ben
-    public static Block generateNextBlock(String blockData){
+    public static Block generateNextBlock(String blockData, String miner){
         Block previousBlock = chain.lastElement();
         int nextIndex = previousBlock.index + 1;
         double nextTimestamp = new Date().getTime() / 1000;
-        String nextHash = calculateHash(nextIndex, previousBlock.hash, nextTimestamp, blockData);
+        String nextHash = HashUtils.SHA256((nextIndex + previousBlock.hash + nextTimestamp + blockData));
 //        Block newBlock = new Block(nextIndex, nextTimestamp, previousBlock.hash, blockData, transaction, difficulty);
-        Block newBlock = new Block(nextIndex, nextHash, previousBlock.hash, nextTimestamp, blockData);
+        Block newBlock = new Block(miner, nextIndex, nextHash, previousBlock.hash, nextTimestamp, blockData);
 
         return newBlock;
     }
 
     // Ben
-    public static Block findBlock(int index, String previousHash, double timestamp, String data, int difficulty) {
+    public static Block miningBlock(int index, String previousHash, double timestamp, String data, int difficulty) {
         int nonce = 0;
         while (true) {
-            final String hash = calculateHash(index, previousHash, timestamp, data, difficulty, nonce);
-//            int difficulty = getDifficulty(chain, DIFFICULTY_ADJUSTMENT_INTERVAL, BLOCK_GENERATION_INTERVAL);
+//            final String hash = calculateHash(index, previousHash, timestamp, data, difficulty, nonce);
+            final String hash = HashUtils.SHA256((index + previousHash + timestamp + data + nonce));
 //            Block newBlock = generateNextBlock(blockData, transaction, chain, difficulty);
-//            if (hashMatchesDifficulty(newBlock.hash, difficulty)) {
-//                return newBlock;
-//            }
+            if (hashMatchesDifficulty(hash, difficulty)) {
+                int newBlockDifficulty = getDifficulty(chain);
+                Block newBlock = new Block(index, hash, previousHash, timestamp, data, newBlockDifficulty, nonce);
+                return newBlock;
+            }
+            nonce++;
         }
     }
 
@@ -293,7 +235,7 @@ public class Main {
             System.out.println("index: " + block.index);
             System.out.println("timestamp: " + block.timestamp);
             System.out.println("data: " + block.data);
-            System.out.println("transactionID: " + block.transaction.id);
+//            System.out.println("transactionID: " + block.transaction.id);
             System.out.println("previousHash: " + block.previousHash);
             System.out.println("hash: " + block.hash);
             System.out.println("------------------------------------------------------------------------");

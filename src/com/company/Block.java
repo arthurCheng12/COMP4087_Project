@@ -2,6 +2,7 @@ package com.company;
 
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
+import java.util.Vector;
 import java.util.concurrent.ThreadLocalRandom;
 
 public class Block {
@@ -13,7 +14,9 @@ public class Block {
     public int difficulty;
     public int nonce;
 
-    public Transaction transaction;
+
+    public Vector<Transaction> transactions;
+    public String minerAddress;
 
     public Block(int index, double timestamp, String previousHash, String data, Transaction transaction, int difficulty) {
         this.index = index;
@@ -22,7 +25,7 @@ public class Block {
         this.previousHash = previousHash;
         this.data = data;
 
-        this.transaction = transaction;
+
         this.difficulty = difficulty;
         this.nonce = ThreadLocalRandom.current().nextInt();
 
@@ -48,16 +51,35 @@ public class Block {
     }
 
     // Ben
-    public Block(int index, String hash, String previousHash, double timestamp, String data) {
+    public Block(String minerAddress, int index, String hash, String previousHash, double timestamp, String data) {
+        this.minerAddress = minerAddress;
         this.index = index;
         this.timestamp = timestamp;
-//        this.hash = calculateHash(this.index, this.timestamp, this.previousHash, this.data, this.nonce);
-        this.hash = calculateHash(this.index, this.timestamp, this.previousHash, this.data, this.nonce);
+        this.hash = hash;
         this.previousHash = previousHash;
         this.data = data;
 
-//        this.transaction = transaction;
+        this.transactions = new Vector<Transaction>();
+//        Transaction coinbaseTrans = Transaction.genConinbaseTrans();
+//        transactions.add(coinbaseTrans);
+
 //        this.difficulty = difficulty;
 //        this.nonce = ThreadLocalRandom.current().nextInt();
+    }
+
+    // Ben
+    public Block(int index, String hash, String previousHash, double timestamp, String data, int difficulty, int nonce) {
+        this.index = index;
+        this.timestamp = timestamp;
+        this.hash = hash;
+        this.previousHash = previousHash;
+        this.data = data;
+        this.difficulty = difficulty;
+        this.nonce = nonce;
+
+//        this.transaction = transaction;
+        this.transactions = new Vector<Transaction>();
+//        Transaction coinbaseTrans = Transaction.genConinbaseTrans();
+//        transactions.add(coinbaseTrans);
     }
 }
