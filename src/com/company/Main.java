@@ -9,7 +9,7 @@ import java.util.HashMap;
 import java.util.Vector;
 
 public class Main {
-    public static void main(String[] args) {
+    public static void main(String[] args) throws Exception{
         // write your code here
         System.out.println("Block Chain Start!");
         int BLOCK_GENERATION_INTERVAL = 0;
@@ -40,7 +40,7 @@ public class Main {
         printBlockChain(chain);
     }
 
-    public static Transaction createTransaction(String txOutId, int txOutIndex, String address, double amount) {
+    public static Transaction createTransaction(String txOutId, int txOutIndex, String address, double amount) throws Exception{
         Transaction.TxIn txIn = new Transaction.TxIn(txOutId, txOutIndex);
         Transaction.TxOut txOut = new Transaction.TxOut(address, amount);
         return new Transaction(txIn, txOut);

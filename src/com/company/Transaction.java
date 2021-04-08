@@ -1,6 +1,11 @@
 package com.company;
+import sun.misc.BASE64Encoder;
+
 import java.nio.charset.StandardCharsets;
+import java.security.KeyPair;
 import java.security.MessageDigest;
+import java.security.PrivateKey;
+import java.security.PublicKey;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -60,11 +65,35 @@ public class Transaction {
         public int txOutIndex;
         public String signature;
 
-        public TxIn(String txOutId, int txOutIndex) {
+        public TxIn(String txOutId, int txOutIndex) throws Exception {
             this.txOutId = txOutId;
             this.txOutIndex = txOutIndex;
-            this.signature = "Copy from RSA plz";
+            this.signature = genRSASign(txOutId, txOutIndex);
         }
+
+        public String genRSASign(String txOutId, int txOutIndex) throws Exception {
+            KeyPair keyPair = RSASignUtils.generateKeyPair();
+            PublicKey pubKey = keyPair.getPublic();
+            PrivateKey priKey = keyPair.getPrivate();
+
+            String data = txOutId + txOutIndex;
+            byte[] signInfo = RSASignUtils.sign(data.getBytes(), priKey);
+            boolean verify = RSASignUtils.verify(data.getBytes(), signInfo, pubKey);
+
+            System.out.println("Line 84 - Public Key : " + pubKey);
+            System.out.println("Line 85 - Private Key : " + priKey);
+
+            if (verify) {
+                // System.out.println("Line 84 Verify! \n : " + new BASE64Encoder().encode(signInfo));
+                return new BASE64Encoder().encode(signInfo);
+            } else {
+                // System.out.println("Line 87 Not Verify!");
+                return "No RSA Sign";
+            }
+
+        }
+
+
     }
 
 }
