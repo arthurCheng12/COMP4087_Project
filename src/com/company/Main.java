@@ -14,12 +14,14 @@ import java.util.HashMap;
 import java.util.Vector;
 
 public class Main {
+    static final int BLOCK_GENERATION_INTERVAL = 0;
+    static final int DIFFICULTY_ADJUSTMENT_INTERVAL = 8;
+    static Vector<Block> chain = new Vector<Block>();
+
     public static void main(String[] args) throws Exception{
         // write your code here
         System.out.println("Block Chain Start!");
-        int BLOCK_GENERATION_INTERVAL = 0;
-        int DIFFICULTY_ADJUSTMENT_INTERVAL = 8;
-        Vector<Block> chain = new Vector<Block>();
+
         Transaction transaction;
         String blockData;
 
@@ -100,11 +102,14 @@ public class Main {
         }
     }
 
-    public static String hashForBlock(Block block) {
+    // Ben
+    public static String calculateHash(int index, String previousHash, double timestamp, String data) {
         try {
             MessageDigest digest = MessageDigest.getInstance("SHA-256");
-            String blockInformation = (block.index + block.previousHash + block.timestamp + block.data + block.nonce);
+//            String blockInformation = (index + previousHash + timestamp + data + nonce);
+            String blockInformation = (index + previousHash + timestamp + data);
             byte[] hash = digest.digest(blockInformation.getBytes(StandardCharsets.UTF_8));
+
             StringBuffer hexString = new StringBuffer();
             for (int i = 0; i < hash.length; i++) {
                 String hex = Integer.toHexString(0xff & hash[i]);
@@ -113,9 +118,78 @@ public class Main {
                 }
                 hexString.append(hex);
             }
+
             return hexString.toString();
         } catch (Exception e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    public static String calculateHash(int index, String previousHash, double timestamp, String data, int difficulty, int nonce) {
+        try {
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+//            String blockInformation = (index + previousHash + timestamp + data + nonce);
+            String blockInformation = (index + previousHash + timestamp + data);
+            byte[] hash = digest.digest(blockInformation.getBytes(StandardCharsets.UTF_8));
+
+            StringBuffer hexString = new StringBuffer();
+            for (int i = 0; i < hash.length; i++) {
+                String hex = Integer.toHexString(0xff & hash[i]);
+                if (hex.length() == 1) {
+                    hexString.append('0');
+                }
+                hexString.append(hex);
+            }
+
+            return hexString.toString();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+        // Ben
+    public static String SHA256(String message){
+        try {
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            byte[] hash = digest.digest(message.getBytes(StandardCharsets.UTF_8));
+
+            StringBuffer hexString = new StringBuffer();
+            for (int i = 0; i < hash.length; i++) {
+                String hex = Integer.toHexString(0xff & hash[i]);
+                if (hex.length() == 1) {
+                    hexString.append('0');
+                }
+                hexString.append(hex);
+            }
+
+            return hexString.toString();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    // Ben
+    public static Block generateNextBlock(String blockData){
+        Block previousBlock = chain.lastElement();
+        int nextIndex = previousBlock.index + 1;
+        double nextTimestamp = new Date().getTime() / 1000;
+        String nextHash = calculateHash(nextIndex, previousBlock.hash, nextTimestamp, blockData);
+//        Block newBlock = new Block(nextIndex, nextTimestamp, previousBlock.hash, blockData, transaction, difficulty);
+        Block newBlock = new Block(nextIndex, nextHash, previousBlock.hash, nextTimestamp, blockData);
+
+        return newBlock;
+    }
+
+    // Ben
+    public static Block findBlock(int index, String previousHash, double timestamp, String data, int difficulty) {
+        int nonce = 0;
+        while (true) {
+            final String hash = calculateHash(index, previousHash, timestamp, data, difficulty, nonce);
+//            int difficulty = getDifficulty(chain, DIFFICULTY_ADJUSTMENT_INTERVAL, BLOCK_GENERATION_INTERVAL);
+//            Block newBlock = generateNextBlock(blockData, transaction, chain, difficulty);
+//            if (hashMatchesDifficulty(newBlock.hash, difficulty)) {
+//                return newBlock;
+//            }
         }
     }
 
@@ -137,6 +211,27 @@ public class Main {
             System.out.println("invalid hash");
             return false;
         } else return true;
+    }
+
+    public static String hashForBlock(Block block) {
+        try {
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            String blockInformation = block.index + block.previousHash + block.timestamp + block.data + block.nonce;
+            byte[] hash = digest.digest(blockInformation.getBytes(StandardCharsets.UTF_8));
+            StringBuffer hexString = new StringBuffer();
+
+            for(int i = 0; i < hash.length; ++i) {
+                String hex = Integer.toHexString(255 & hash[i]);
+                if (hex.length() == 1) {
+                    hexString.append('0');
+                }
+                hexString.append(hex);
+            }
+
+            return hexString.toString();
+        } catch (Exception var7) {
+            throw new RuntimeException(var7);
+        }
     }
 
     public static boolean hashMatchesDifficulty(String hash, int difficulty) {
