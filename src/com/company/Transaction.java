@@ -16,7 +16,6 @@ public class Transaction {
     // here should be vector[] txIns and txOuts, see ppt 22
     public TxIn txIns;
     public TxOut txOuts;
-    public static PublicKey publicKey;
 
     public Transaction(TxIn txIns, TxOut txOuts) throws Exception {
         this.txIns = txIns;
@@ -55,42 +54,21 @@ public class Transaction {
         }
     }
 
+    public TxIn getTxIns () {
+        return txIns;
+    }
 
+    public TxOut getTxOuts () {
+        return txOuts;
+    }
 
-
-    // old
-//    static class TxOut {
-//        public String address;
-//        public double amount;
-//        TxOut(String address, double amount) {
-//            this.address = address;
-//            this.amount = amount;
-//        }
-//    }
-//
-//    static class TxIn {
-//        public String txOutId;
-//        public int txOutIndex;
-//        public String signature;
-//
-//        public TxIn(String txOutId, int txOutIndex, String signature) throws Exception {
-//            this.txOutId = txOutId;
-//            this.txOutIndex = txOutIndex;
-//            this.signature = signature;
-//        }
-//    }
-
-    // new him
-    public static String genSignature(String data) throws Exception {
-        KeyPair keyPair = getKeyPair();
-        publicKey = keyPair.getPublic();
-        PrivateKey privateKey = keyPair.getPrivate();
+    public static String genSignature(PrivateKey privateKey, String data) throws Exception {
         String sign = signECDSA(privateKey, data);
         return sign;
     }
 
-    public static void verifySignature(PublicKey publicKey, String sign, String data) {
-        verifyECDSA(publicKey, sign, data);
+    public static boolean verifySignature(PublicKey publicKey, String sign, String data) {
+        return verifyECDSA(publicKey, sign, data);
     }
 
     static class TxIn {
@@ -118,6 +96,14 @@ public class Transaction {
 
         public void setSignature(String signature) {
             this.signature = signature;
+        }
+
+        public String getTxOutId() {
+            return txOutId;
+        }
+
+        public int getTxOutIndex() {
+            return txOutIndex;
         }
 
         public String getSignature() {

@@ -1,14 +1,36 @@
 package com.company;
 
+import java.security.KeyPair;
+import java.security.PublicKey;
+import java.security.PrivateKey;
+import static com.company.ECDSAUtils.*;
+
 public class User {
 
-    public String address;
-    public double amount;
-    public String privateKey;
-    public String publicKey;
+    private double amount;
+    private PublicKey publicKey;
+    private PrivateKey privateKey;
+    private KeyPair keyPair = getKeyPair();
 
-    public User(String address, double amount) {
-        this.address = address;
-        this.amount = amount;
+    public User() throws Exception {
+        this.amount = 0;
+    }
+
+    public double getAmount() {
+        return amount;
+    }
+
+    public void setAmount(double amount) {
+        this.amount = this.amount + amount;
+    }
+
+    public PublicKey getPublicKey() {
+        publicKey = keyPair.getPublic();
+        return publicKey;
+    }
+
+    public PrivateKey getPrivateKey() {
+        privateKey = keyPair.getPrivate();
+        return privateKey;
     }
 }

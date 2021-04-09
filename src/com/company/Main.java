@@ -12,6 +12,8 @@ import java.security.PublicKey;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Vector;
+import static com.company.utils.*;
+
 
 public class Main {
     static final int BLOCK_GENERATION_INTERVAL = 30;
@@ -26,69 +28,96 @@ public class Main {
         Transaction transaction;
         String blockData;
 
-        transaction = createTransaction("127.0.0.1:3000", 50, "127.0.0.1:3000", 5);
+        User alice = new User();
+        User bob = new User();
+        User peter = new User();
+
+        transaction = createTransaction("127.0.0.1:3000", 50, alice.getPrivateKey(), "" + bob.getPublicKey(), 5);
+        if (transaction.verifySignature(alice.getPublicKey(), transaction.getTxIns().getSignature(), transaction.getTxIns().getTxOutId() + transaction.getTxIns().getTxOutIndex())) {
+            bob.setAmount(5);
+        } else {
+        }
+
         blockData = "This is the gene block";
         Block block = new Block(0, new Date().getTime() / 1000, "th1515f1r5t810ckh45h", blockData, transaction, DIFFICULTY_ADJUSTMENT_INTERVAL);
         chain.add(block);
 
-        transaction = createTransaction("127.0.0.1:3000", 45, "127.0.0.1:3001", 5);
+        transaction = createTransaction("127.0.0.1:3000", 45, alice.getPrivateKey(), "" + bob.getPublicKey(),  15);
+        if (transaction.verifySignature(bob.getPublicKey(), transaction.getTxIns().getSignature(), transaction.getTxIns().getTxOutId() + transaction.getTxIns().getTxOutIndex())) {
+            bob.setAmount(15);
+        } else {
+        }
+
         blockData = "Gun";
-        block = findBlock(blockData, transaction, chain, DIFFICULTY_ADJUSTMENT_INTERVAL, BLOCK_GENERATION_INTERVAL);
+        block = findBlock(blockData, transaction);
         if (isValidNewBlock(block, chain.lastElement())) {
             MintCoinTransaction();
             chain.add(block);
         }
 
-        transaction = createTransaction("127.0.0.1:3000", 40,"127.0.0.1:3002", 5);
+        transaction = createTransaction("127.0.0.1:3000", 40, peter.getPrivateKey(), "" + alice.getPublicKey(), 40);
+        if (transaction.verifySignature(peter.getPublicKey(), transaction.getTxIns().getSignature(), transaction.getTxIns().getTxOutId() + transaction.getTxIns().getTxOutIndex())) {
+            alice.setAmount(40);
+        } else {
+        }
+
         blockData = "420";
-        block = findBlock(blockData, transaction, chain, DIFFICULTY_ADJUSTMENT_INTERVAL, BLOCK_GENERATION_INTERVAL);
+        block = findBlock(blockData, transaction);
         if (isValidNewBlock(block, chain.lastElement())) {
             MintCoinTransaction();
             chain.add(block);
         }
 
-        printBlockChain(chain);
+        printBlockChain();
+
+        // Testing
+         System.out.println("Alice Amount : " + alice.getAmount());
+         System.out.println("Bob Amount : " + bob.getAmount());
+         System.out.println("Peter Amount : " + peter.getAmount());
+
+        printBlockChain();
 
         // a user have a address, and keep mining block
-//        User user1 = new User()
+        //        User user1 = new User()
     }
 
-    public static Transaction createTransaction(String txOutId, int txOutIndex, String address, double amount) throws Exception{
+//    public static Block createGenesisBlock() {
+//        return new Block(0, "\"Everything starts from here!\"", "0");
+//    }
+
+    // new
+    public static Transaction createTransaction(String txOutId, int txOutIndex, PrivateKey privateKey, String address, double amount) throws Exception{
         Transaction.TxIn txIn = new Transaction.TxIn();
         Transaction.TxOut txOut = new Transaction.TxOut();
         Transaction transaction = new Transaction(txIn, txOut);
         txIn.setTxOutId(txOutId);
         txIn.setTxOutIndex(txOutIndex);
-        txIn.setSignature(transaction.genSignature("" + amount));
+        txIn.setSignature(transaction.genSignature(privateKey, txIn.getTxOutId() + txOutIndex));
         //System.out.println("Line 64 Signature : " + txIn.getSignature());
-        txOut.setAddress(DatatypeConverter.printHexBinary(transaction.publicKey.getEncoded()));
+        txOut.setAddress(address);
         //System.out.println("Line 66 Address : " + txOut.getAddress());
         txOut.setAmount(amount);
         //System.out.println("Line 68 Amount : " + txOut.getAmount());
 
-        transaction.verifySignature(transaction.publicKey, txIn.getSignature(), "" + txOut.getAmount());
         return transaction;
     }
 
     // old
 //    public static Transaction createTransaction(String txOutId, int txOutIndex, String address, double amount) throws Exception{
-//            Transaction.TxOut txOut = new Transaction.TxOut(address, amount);
-//            String data = address + amount;
-//            KeyPair keyPair = RSASignUtils.generateKeyPair();
-//            PublicKey pubKey = keyPair.getPublic();
-//            PrivateKey priKey = keyPair.getPrivate();
-//            byte[] signInfo = RSASignUtils.sign(data.getBytes(), priKey);
-//            String signature = new BASE64Encoder().encode(signInfo);;
-//            Transaction.TxIn txIn = new Transaction.TxIn(txOutId, txOutIndex, signature);
+//        Transaction.TxIn txIn = new Transaction.TxIn();
+//        Transaction.TxOut txOut = new Transaction.TxOut();
+//        Transaction transaction = new Transaction(txIn, txOut);
+//        txIn.setTxOutId(txOutId);
+//        txIn.setTxOutIndex(txOutIndex);
+//        txIn.setSignature(transaction.genSignature("" + amount));
+//        System.out.println("Line 64 Signature : " + txIn.getSignature());
+//        txOut.setAddress(DatatypeConverter.printHexBinary(transaction.publicKey.getEncoded()));
+//        System.out.println("Line 66 Address : " + txOut.getAddress());
+//        txOut.setAmount(amount);
+//        System.out.println("Line 68 Amount : " + txOut.getAmount());
 //
-//            boolean verify = RSASignUtils.verify(data.getBytes(), signInfo, pubKey);
-//
-//            if (verify) {
-//                System.out.println("Verify Status " + verify);
-//            } else {
-//                System.out.println("Not verified ");
-//            }
-//            return new Transaction(txIn, txOut);
+//        transaction.verifySignature(transaction.publicKey, txIn.getSignature(), "" + txOut.getAmount());
+//        return transaction;
 //    }
 
     public static int getAdjustedDifficulty(Block latestBlock, Vector<Block> chain) {
@@ -113,7 +142,7 @@ public class Main {
         }
     }
 
-    public static Block findBlock(String blockData, Transaction transaction, Vector<Block> chain, int DIFFICULTY_ADJUSTMENT_INTERVAL, int BLOCK_GENERATION_INTERVAL) {
+    public static Block findBlock(String blockData, Transaction transaction) {
         while (true) {
             int difficulty = getDifficulty(chain);
             Block newBlock = generateNextBlock(blockData, transaction, chain, difficulty);
@@ -123,13 +152,12 @@ public class Main {
         }
     }
 
-
     // Ben
     public static Block generateNextBlock(String blockData, String miner){
         Block previousBlock = chain.lastElement();
         int nextIndex = previousBlock.index + 1;
         double nextTimestamp = new Date().getTime() / 1000;
-        String nextHash = utils.SHA256((nextIndex + previousBlock.hash + nextTimestamp + blockData));
+        String nextHash = SHA256((nextIndex + previousBlock.hash + nextTimestamp + blockData));
 //        Block newBlock = new Block(nextIndex, nextTimestamp, previousBlock.hash, blockData, transaction, difficulty);
         Block newBlock = new Block(miner, nextIndex, nextHash, previousBlock.hash, nextTimestamp, blockData);
 
@@ -137,11 +165,11 @@ public class Main {
     }
 
     // Ben
-    public static Block miningBlock(int index, String previousHash, double timestamp, String data, int difficulty) {
+    public static Block findBlock(int index, String previousHash, double timestamp, String data, int difficulty) {
         int nonce = 0;
         while (true) {
 //            final String hash = calculateHash(index, previousHash, timestamp, data, difficulty, nonce);
-            final String hash = utils.SHA256((index + previousHash + timestamp + data + nonce));
+            final String hash = SHA256((index + previousHash + timestamp + data + nonce));
 //            Block newBlock = generateNextBlock(blockData, transaction, chain, difficulty);
             if (hashMatchesDifficulty(hash, difficulty)) {
                 int newBlockDifficulty = getDifficulty(chain);
@@ -193,60 +221,8 @@ public class Main {
         }
     }
 
-    public static boolean hashMatchesDifficulty(String hash, int difficulty) {
-        String hashInBinary = hexToBinary(hash);
-        String requiredPrefix = repeat("0", difficulty);
-        return hashInBinary.startsWith(requiredPrefix);
-    }
 
-    public static String hexToBinary(String hex) {
-        String binary = "";
-        hex = hex.toUpperCase();
-
-        // initializing the HashMap class
-        HashMap<Character, String> hashMap = new HashMap<Character, String>();
-
-        // storing the key value pairs
-        hashMap.put('0', "0000");
-        hashMap.put('1', "0001");
-        hashMap.put('2', "0010");
-        hashMap.put('3', "0011");
-        hashMap.put('4', "0100");
-        hashMap.put('5', "0101");
-        hashMap.put('6', "0110");
-        hashMap.put('7', "0111");
-        hashMap.put('8', "1000");
-        hashMap.put('9', "1001");
-        hashMap.put('A', "1010");
-        hashMap.put('B', "1011");
-        hashMap.put('C', "1100");
-        hashMap.put('D', "1101");
-        hashMap.put('E', "1110");
-        hashMap.put('F', "1111");
-
-        int i;
-        char ch;
-        for (i = 0; i < hex.length(); i++) {
-            ch = hex.charAt(i);
-            if (hashMap.containsKey(ch))
-                binary += hashMap.get(ch);
-            else {
-                binary = "Invalid Hexadecimal String";
-                return binary;
-            }
-        }
-        return binary;
-    }
-
-    public static String repeat(String str, int difficulty) {
-        String result = "";
-        for (int i = 0; i < difficulty; i++) {
-            result += str;
-        }
-        return result;
-    }
-
-    public static void printBlockChain(Vector<Block> chain) {
+    public static void printBlockChain() {
         for (int i = 0; i < chain.size(); i++) {
             Block block = chain.get(i);
             System.out.println("index: " + block.index);
