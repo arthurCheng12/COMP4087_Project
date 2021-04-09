@@ -8,6 +8,7 @@ import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.util.HashMap;
 import java.util.Map;
+import static com.company.ECDSAUtils.*;
 
 public class Transaction {
     public String id;
@@ -15,6 +16,7 @@ public class Transaction {
     // here should be vector[] txIns and txOuts, see ppt 22
     public TxIn txIns;
     public TxOut txOuts;
+    public static PublicKey publicKey;
 
     public Transaction(TxIn txIns, TxOut txOuts) throws Exception {
         this.txIns = txIns;
@@ -53,16 +55,42 @@ public class Transaction {
         }
     }
 
-    //Ben
 
 
-    static class TxOut {
-        public String address;
-        public double amount;
-        TxOut(String address, double amount) {
-            this.address = address;
-            this.amount = amount;
-        }
+
+    // old
+//    static class TxOut {
+//        public String address;
+//        public double amount;
+//        TxOut(String address, double amount) {
+//            this.address = address;
+//            this.amount = amount;
+//        }
+//    }
+//
+//    static class TxIn {
+//        public String txOutId;
+//        public int txOutIndex;
+//        public String signature;
+//
+//        public TxIn(String txOutId, int txOutIndex, String signature) throws Exception {
+//            this.txOutId = txOutId;
+//            this.txOutIndex = txOutIndex;
+//            this.signature = signature;
+//        }
+//    }
+
+    // new him
+    public static String genSignature(String data) throws Exception {
+        KeyPair keyPair = getKeyPair();
+        publicKey = keyPair.getPublic();
+        PrivateKey privateKey = keyPair.getPrivate();
+        String sign = signECDSA(privateKey, data);
+        return sign;
+    }
+
+    public static void verifySignature(PublicKey publicKey, String sign, String data) {
+        verifyECDSA(publicKey, sign, data);
     }
 
     static class TxIn {
@@ -70,14 +98,61 @@ public class Transaction {
         public int txOutIndex;
         public String signature;
 
+        public TxIn() {
+
+        }
+
         public TxIn(String txOutId, int txOutIndex, String signature) throws Exception {
             this.txOutId = txOutId;
             this.txOutIndex = txOutIndex;
             this.signature = signature;
         }
 
+        public void setTxOutId(String txOutId) {
+            this.txOutId = txOutId;
+        }
 
+        public void setTxOutIndex(int txOutIndex) {
+            this.txOutIndex = txOutIndex;
+        }
 
+        public void setSignature(String signature) {
+            this.signature = signature;
+        }
+
+        public String getSignature() {
+            return signature;
+        }
+    }
+
+    static class TxOut {
+        public String address;
+        public double amount;
+
+        public TxOut() {
+
+        }
+
+        public TxOut(String address, double amount) {
+            this.address = address;
+            this.amount = amount;
+        }
+
+        public void setAddress(String address) {
+            this.address = address;
+        }
+
+        public String getAddress() {
+            return address;
+        }
+
+        public void setAmount(double amount) {
+            this.amount = amount;
+        }
+
+        public double getAmount() {
+            return amount;
+        }
 
     }
 

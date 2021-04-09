@@ -54,25 +54,42 @@ public class Main {
     }
 
     public static Transaction createTransaction(String txOutId, int txOutIndex, String address, double amount) throws Exception{
-        Transaction.TxOut txOut = new Transaction.TxOut(address, amount);
-        String data = address + amount;
-        KeyPair keyPair = RSASignUtils.generateKeyPair();
-        PublicKey pubKey = keyPair.getPublic();
-        PrivateKey priKey = keyPair.getPrivate();
-        byte[] signInfo = RSASignUtils.sign(data.getBytes(), priKey);
-        String signature = new BASE64Encoder().encode(signInfo);;
-        Transaction.TxIn txIn = new Transaction.TxIn(txOutId, txOutIndex, signature);
+        Transaction.TxIn txIn = new Transaction.TxIn();
+        Transaction.TxOut txOut = new Transaction.TxOut();
+        Transaction transaction = new Transaction(txIn, txOut);
+        txIn.setTxOutId(txOutId);
+        txIn.setTxOutIndex(txOutIndex);
+        txIn.setSignature(transaction.genSignature("" + amount));
+        //System.out.println("Line 64 Signature : " + txIn.getSignature());
+        txOut.setAddress(DatatypeConverter.printHexBinary(transaction.publicKey.getEncoded()));
+        //System.out.println("Line 66 Address : " + txOut.getAddress());
+        txOut.setAmount(amount);
+        //System.out.println("Line 68 Amount : " + txOut.getAmount());
 
-        boolean verify = RSASignUtils.verify(data.getBytes(), signInfo, pubKey);
-
-        if (verify) {
-            System.out.println("Verify Status " + verify);
-        } else {
-            System.out.println("Not verified ");
-        }
-        return new Transaction(txIn, txOut);
-
+        transaction.verifySignature(transaction.publicKey, txIn.getSignature(), "" + txOut.getAmount());
+        return transaction;
     }
+
+    // old
+//    public static Transaction createTransaction(String txOutId, int txOutIndex, String address, double amount) throws Exception{
+//            Transaction.TxOut txOut = new Transaction.TxOut(address, amount);
+//            String data = address + amount;
+//            KeyPair keyPair = RSASignUtils.generateKeyPair();
+//            PublicKey pubKey = keyPair.getPublic();
+//            PrivateKey priKey = keyPair.getPrivate();
+//            byte[] signInfo = RSASignUtils.sign(data.getBytes(), priKey);
+//            String signature = new BASE64Encoder().encode(signInfo);;
+//            Transaction.TxIn txIn = new Transaction.TxIn(txOutId, txOutIndex, signature);
+//
+//            boolean verify = RSASignUtils.verify(data.getBytes(), signInfo, pubKey);
+//
+//            if (verify) {
+//                System.out.println("Verify Status " + verify);
+//            } else {
+//                System.out.println("Not verified ");
+//            }
+//            return new Transaction(txIn, txOut);
+//    }
 
     public static int getAdjustedDifficulty(Block latestBlock, Vector<Block> chain) {
         Block prevAdjustmentBlock = chain.get(chain.size() - DIFFICULTY_ADJUSTMENT_INTERVAL);
@@ -112,7 +129,7 @@ public class Main {
         Block previousBlock = chain.lastElement();
         int nextIndex = previousBlock.index + 1;
         double nextTimestamp = new Date().getTime() / 1000;
-        String nextHash = HashUtils.SHA256((nextIndex + previousBlock.hash + nextTimestamp + blockData));
+        String nextHash = utils.SHA256((nextIndex + previousBlock.hash + nextTimestamp + blockData));
 //        Block newBlock = new Block(nextIndex, nextTimestamp, previousBlock.hash, blockData, transaction, difficulty);
         Block newBlock = new Block(miner, nextIndex, nextHash, previousBlock.hash, nextTimestamp, blockData);
 
@@ -124,7 +141,7 @@ public class Main {
         int nonce = 0;
         while (true) {
 //            final String hash = calculateHash(index, previousHash, timestamp, data, difficulty, nonce);
-            final String hash = HashUtils.SHA256((index + previousHash + timestamp + data + nonce));
+            final String hash = utils.SHA256((index + previousHash + timestamp + data + nonce));
 //            Block newBlock = generateNextBlock(blockData, transaction, chain, difficulty);
             if (hashMatchesDifficulty(hash, difficulty)) {
                 int newBlockDifficulty = getDifficulty(chain);
