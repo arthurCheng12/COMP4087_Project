@@ -6,19 +6,29 @@ import java.util.ArrayList;
 import java.util.concurrent.ThreadLocalRandom;
 import static com.company.utils.*;
 import java.security.PublicKey;
+import com.google.gson.annotations.Expose;
 
 public class Block {
+    @Expose
     public int index;
+    @Expose
     public double timestamp;
+    @Expose
     public String hash;
+    @Expose
     public String merkleRootHash;
+    @Expose
     public String previousHash;
+    @Expose
     public String data;
+    @Expose
     public int difficulty;
+    @Expose
     public int nonce;
 
-
+    @Expose
     public ArrayList<Transaction> transactions;
+    @Expose
     public String minerAddress;
 
 //    public Block(int index, double timestamp, String previousHash, String data, Transaction transaction, int difficulty) {
@@ -91,7 +101,16 @@ public class Block {
         this.merkleRootHash = generateMerkleTreeRoot(transactions);
     }
 
-    public void addTransaction(Transaction transaction) {
+    public boolean addTransaction(Transaction transaction) {
+
+        if(transaction == null) return false;
+        if((!"0".equals(previousHash)) && transaction.txIns != null ) {
+            if((transaction.processTransaction() != true)) {
+                System.out.println("Transaction failed to process. Discarded.");
+                return false;
+            }
+        }
         transactions.add(transaction);
+        return true;
     }
 }

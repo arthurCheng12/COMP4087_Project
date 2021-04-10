@@ -3,6 +3,8 @@ package com.company;
 import sun.misc.BASE64Encoder;
 
 import javax.xml.bind.DatatypeConverter;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.security.KeyPair;
@@ -22,20 +24,109 @@ public class Main {
     static final int COINBASE_AMOUNT = 50;
     static final int TOTAL_COIN_SUPPLY = 21000000;
     static ArrayList<Block> chain = new ArrayList<Block>();
-    static User system;
+    public static HashMap<String, TxOut> UTXOs = new HashMap<String, TxOut>();
+    public static HashMap<String, User> Users = new HashMap<String, User>();
+
+    static User coinbase;
+
+
+
 
     public static void main(String[] args) throws Exception{
         // write your code here
         System.out.println("Block Chain Start!");
 
-        Transaction transaction;
-        String blockData;
-
-        system = new User(TOTAL_COIN_SUPPLY);
-
+        coinbase = new User();
         User alice = new User();
         User bob = new User();
         User peter = new User();
+        User ben = new User();
+
+        Users.put("alice", alice);
+        Users.put("bob", bob);
+        Users.put("peter", peter);
+        Users.put("ben", ben);
+
+        BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
+
+        int operation = 0;
+        while (operation != 6) {
+            System.out.println("Please input operation :");
+            System.out.println("1 : Create Block Chain");
+            System.out.println("2 : Mining Block ");
+            System.out.println("3 : Create Transaction ");
+            System.out.println("4 : Print User State ");
+            System.out.println("5 : Print Block Chain ");
+            System.out.println("6 : Exit ");
+
+            operation = Integer.parseInt(reader.readLine());
+            switch(operation){
+                case 1 :
+                    Transaction genesisTransaction = new Transaction(coinbase.publicKey, alice.publicKey, 100, null);
+                    genesisTransaction.genSignature(coinbase.privateKey);
+
+                    genesisTransaction.id = "0";
+                    genesisTransaction.txOuts.add(new TxOut(genesisTransaction.reciepient, genesisTransaction.amount, genesisTransaction.id));
+                    UTXOs.put(genesisTransaction.txOuts.get(0).txOutId, genesisTransaction.txOuts.get(0));
+
+                    System.out.println("Creating and Mining Genesis block... ");
+                    Block genesisBlock = createGenesisBlock();
+                    genesisBlock.addTransaction(genesisTransaction);
+                    chain.add(genesisBlock) ;
+                    break;
+                case 2 :
+                    System.out.print("Input miner name : ");
+                    String minerName = reader.readLine();
+//                    chain.add(findBlock(ben.publicKey, minerName + " find a block"));
+                    try {
+                        User miner = Users.get(minerName);
+//                        System.out.print(miner.publicKey);
+                        chain.add(findBlock(miner.publicKey, minerName + " find a block"));
+                    }catch (Exception e){
+                        System.out.print(e);
+                        System.out.print("User not find");
+                    }
+                    break;
+                case 3 :
+                    System.out.print("Input sender : ");
+                    String senderName = reader.readLine();
+                    System.out.print("Input recipient : ");
+                    String recipientName = reader.readLine();
+                    System.out.print("Input Amount : ");
+                    double amount = Integer.parseInt( reader.readLine());
+
+                    try {
+                        User sender = Users.get(senderName);
+                        User recipient = Users.get(recipientName);
+
+                        Block previousBlock = chain.get(chain.size() - 1);
+                        previousBlock.addTransaction(sender.sendFunds(recipient.publicKey, amount));
+
+                        chain.set(chain.size() - 1, previousBlock);
+                    }catch (Exception e){
+                        System.out.print("User not find");
+                    }
+
+                    break;
+                case 4 :
+                    System.out.println("Alice Balance : " + alice.getBalance() + " public key : " + kCov(alice.publicKey));
+                    System.out.println("Bob Balance   : " + bob.getBalance() + " public key : " + kCov(bob.publicKey));
+                    System.out.println("Peter Balance : " + peter.getBalance() + " public key : " + kCov(peter.publicKey));
+                    System.out.println("Ben Balance : " + ben.getBalance() + " public key : " + kCov(ben.publicKey));
+                    break;
+                case 5 :
+                    printBlockChain();
+                    break;
+                case 6 :
+                    break;
+                case 7 :
+                    alice.sendFunds(ben.publicKey, 20);
+                    break;
+                default :
+                    System.out.println("Unknow operation, please input again");
+            }
+            System.out.println("");
+        }
 //
 //        transaction = createTransaction("127.0.0.1:3000", 50, alice.getPrivateKey(), "" + bob.getPublicKey(), 5);
 //        if (transaction.verifySignature(alice.getPublicKey(), transaction.getTxIns().getSignature(), transaction.getTxIns().getTxOutId() + transaction.getTxIns().getTxOutIndex())) {
@@ -75,12 +166,12 @@ public class Main {
 
 
 
-        chain.add(createGenesisBlock());
-        printBlockChain();
-        for (int i = 0; i <= 20; i++) {
-            chain.add(findBlock(kCov(alice.getPublicKey()), "this " + i + " block"));
-        }
-        printBlockChain();
+//        chain.add(createGenesisBlock());
+//        printBlockChain();
+//        for (int i = 0; i <= 20; i++) {
+//            chain.add(findBlock(kCov(alice.getPublicKey()), "this " + i + " block"));
+//        }
+//        printBlockChain();
 
 
         // Testing
@@ -88,7 +179,7 @@ public class Main {
          System.out.println("Bob Amount : " + bob.getBalance());
          System.out.println("Peter Amount : " + peter.getBalance());
 //
-//        printBlockChain();
+        printBlockChain();
 
         // a user have a address, and keep mining block
         //        User user1 = new User()
@@ -98,22 +189,23 @@ public class Main {
 //        return new Block(0, "\"Everything starts from here!\"", "0");
 //    }
 
-    public static Transaction createTransaction(String txOutId, int txOutIndex, PrivateKey privateKey, String address, double amount) throws Exception{
-        Transaction.TxIn txIn = new Transaction.TxIn();
-        Transaction.TxOut txOut = new Transaction.TxOut();
-        Transaction transaction = new Transaction(txIn, txOut);
-
-        txIn.setTxOutId(txOutId);
-        txIn.setTxOutIndex(txOutIndex);
-        txIn.setSignature(transaction.genSignature(privateKey, txIn.getTxOutId() + txOutIndex));
-        //System.out.println("Line 64 Signature : " + txIn.getSignature());
-        txOut.setAddress(address);
-        //System.out.println("Line 66 Address : " + txOut.getAddress());
-        txOut.setAmount(amount);
-        //System.out.println("Line 68 Amount : " + txOut.getAmount());
-
-        return transaction;
-    }
+    // him
+//    public static Transaction createTransaction(String txOutId, int txOutIndex, PrivateKey privateKey, String address, double amount) throws Exception{
+//        Transaction.TxIn txIn = new Transaction.TxIn();
+//        Transaction.TxOut txOut = new Transaction.TxOut();
+//        Transaction transaction = new Transaction(txIn, txOut);
+//
+//        txIn.setTxOutId(txOutId);
+//        txIn.setTxOutIndex(txOutIndex);
+//        txIn.setSignature(transaction.genSignature(privateKey, txIn.getTxOutId() + txOutIndex));
+//        //System.out.println("Line 64 Signature : " + txIn.getSignature());
+//        txOut.setAddress(address);
+//        //System.out.println("Line 66 Address : " + txOut.getAddress());
+//        txOut.setAmount(amount);
+//        //System.out.println("Line 68 Amount : " + txOut.getAmount());
+//
+//        return transaction;
+//    }
 
     public static int getAdjustedDifficulty(Block latestBlock, ArrayList<Block> chain) {
         Block prevAdjustmentBlock = chain.get(chain.size() - DIFFICULTY_ADJUSTMENT_INTERVAL);
@@ -155,8 +247,9 @@ public class Main {
         String previousBlockHash = "0";
         String blockData = "This is first block";
         String hash = calculateHash(index + previousBlockHash + timestamp + blockData);
+        System.out.println("Genesis Block is created wish hash : " + hash);
 
-        return new Block(kCov(system.getPublicKey()), index, hash, previousBlockHash, timestamp, blockData, DIFFICULTY_ADJUSTMENT_INTERVAL, 0);
+        return new Block(kCov(coinbase.publicKey), index, hash, previousBlockHash, timestamp, blockData, DIFFICULTY_ADJUSTMENT_INTERVAL, 0);
     }
 
     // Ben
@@ -171,16 +264,16 @@ public class Main {
     }
 
     // Ben
-    public static Block findBlock(String miner, String data) {
+    public static Block findBlock(PublicKey miner, String data) {
         int nonce = 0;
         while (true) {
             int difficulty = getDifficulty(chain);
 //            System.out.println(difficulty);
-            Block newBlock = generateNextBlock(miner, data, difficulty, nonce);
+            Block newBlock = generateNextBlock(kCov(miner), data, difficulty, nonce);
             if (hashMatchesDifficulty(newBlock.hash, difficulty)) {
                 // create Coinbase Transaction for block
                 newBlock.addTransaction(createCoinBaseTransaction(miner));;
-                System.out.println("Total block : " + chain.size() + " new block difficulty :" + difficulty);
+                System.out.println("Mined A Block wish hash : " + newBlock.hash + " new block difficulty :" + newBlock.difficulty);
                 return newBlock;
             }
             nonce++;
@@ -217,13 +310,18 @@ public class Main {
 
 
     public static void printBlockChain() {
-        String blockchainJson = new GsonBuilder().setPrettyPrinting().create().toJson(chain);
+        String blockchainJson = new GsonBuilder().excludeFieldsWithoutExposeAnnotation().setPrettyPrinting().create().toJson(chain);
         System.out.println(blockchainJson);
-        double releasedCoins = TOTAL_COIN_SUPPLY - system.getBalance();
         double blockHeight = chain.size();
         System.out.println("Block Height : " + blockHeight);
-        System.out.println("Number of Released Coins : " + releasedCoins);
 
+        System.out.println("UTXOs as follow : ");
+        for(Map.Entry<String, TxOut> item: UTXOs.entrySet()) {
+            TxOut UTXO = item.getValue();
+            System.out.println("id : " + UTXO.txOutId);
+            System.out.println("Amount : " + UTXO.amount);
+            System.out.println("Recipient public key : " + kCov(UTXO.reciepient) + "\n");
+        }
 //        for (int i = 0; i < chain.size(); i++) {
 //            Block block = chain.get(i);
 //            System.out.println("index: " + block.index);
@@ -236,9 +334,14 @@ public class Main {
 //        }
     }
 
-    public static Transaction createCoinBaseTransaction(String miner){
+    public static Transaction createCoinBaseTransaction(PublicKey miner){
         try {
-            Transaction coinBasetransaction = createTransaction("give 50 coins to address 0xabc", 1, system.getPrivateKey(), miner, 50);
+            Transaction coinBasetransaction = new Transaction(coinbase.publicKey, miner, 50, null);
+            coinBasetransaction.genSignature(coinbase.privateKey);
+            coinBasetransaction.id = "0";
+            coinBasetransaction.txOuts.add(new TxOut(coinBasetransaction.reciepient, coinBasetransaction.amount, coinBasetransaction.id));
+            UTXOs.put(coinBasetransaction.txOuts.get(0).txOutId, coinBasetransaction.txOuts.get(0));
+
             return coinBasetransaction;
         }catch (Exception e){
             return null;

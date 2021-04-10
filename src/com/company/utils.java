@@ -1,6 +1,7 @@
 package com.company;
 
 import java.nio.charset.StandardCharsets;
+import java.security.Key;
 import java.security.MessageDigest;
 import java.security.PublicKey;
 import java.util.*;
@@ -9,7 +10,7 @@ import static com.company.utils.hashMatchesDifficulty;
 
 public class utils {
 
-    public static String kCov(PublicKey key) {
+    public static String kCov(Key key) {
         return Base64.getEncoder().encodeToString(key.getEncoded());
     }
     public static String calculateHash(String data){
@@ -36,7 +37,7 @@ public class utils {
         List<String> tempTxList = new ArrayList<String>();
 
         for (int i = 0; i < transactions.size(); i++) {
-            tempTxList.add(Transaction.getTransactionId(transactions.get(i)));
+            tempTxList.add(transactions.get(i).id);
         }
         System.out.println("tempTxList: " + tempTxList);
 
