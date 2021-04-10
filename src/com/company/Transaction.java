@@ -13,7 +13,7 @@ import static com.company.ECDSAUtils.*;
 public class Transaction {
     public String id;
 
-    // here should be vector[] txIns and txOuts, see ppt 22
+    // here should be list[] txIns and txOuts, see ppt 22
     public TxIn txIns;
     public TxOut txOuts;
 

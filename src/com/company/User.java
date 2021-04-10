@@ -7,21 +7,29 @@ import static com.company.ECDSAUtils.*;
 
 public class User {
 
-    private double amount;
+    private double balance;
     private PublicKey publicKey;
     private PrivateKey privateKey;
     private KeyPair keyPair = getKeyPair();
 
+    public User(double balance) throws Exception {
+        this.balance = balance;
+    }
+
     public User() throws Exception {
-        this.amount = 0;
+        this.balance = 0;
     }
 
-    public double getAmount() {
-        return amount;
+    public double getBalance() {
+        return balance;
     }
 
-    public void setAmount(double amount) {
-        this.amount = this.amount + amount;
+    public void addBalance(double amount) {
+        this.balance += amount;
+    }
+
+    public void minusAmount(double amount) {
+        this.balance -= amount;
     }
 
     public PublicKey getPublicKey() {
