@@ -71,8 +71,11 @@ public class Main {
                         System.out.print(i + ": " + userName[i] + "\t");
                     }
                     System.out.println();
-                    System.out.print("Input miner number : ");
-                    int minerName = Integer.parseInt(reader.readLine());
+                    int minerName = -1;
+                    do {
+                        System.out.print("Input miner number : ");
+                        minerName = Integer.parseInt(reader.readLine());
+                    } while(minerName < 0 || minerName > userName.length - 1);
                     try {
                         User miner = Users.get(userName[minerName]);
                         chain.add(findBlock(miner.publicKey, userName[minerName] + " find a block"));
@@ -86,10 +89,18 @@ public class Main {
                         System.out.print(i + ": " + userName[i] + "\t\t");
                     }
                     System.out.println();
-                    System.out.print("Input sender : ");
-                    int senderName = Integer.parseInt(reader.readLine());
-                    System.out.print("Input recipient : ");
-                    int recipientName = Integer.parseInt(reader.readLine());
+                    int senderName = -1;
+                    do {
+                        System.out.print("Input sender number : ");
+                        senderName = Integer.parseInt(reader.readLine());
+                    } while(senderName < 0 || senderName > userName.length - 1);
+
+                    int recipientName = -1;
+                    do {
+                        System.out.print("Input recipient number : ");
+                        recipientName = Integer.parseInt(reader.readLine());
+                    } while(recipientName < 0 || recipientName > userName.length - 1);
+
                     System.out.print("Input Amount : ");
                     double amount = Integer.parseInt(reader.readLine());
 
@@ -125,7 +136,7 @@ public class Main {
                 default:
                     System.out.println("Unknown operation, please input again");
             }
-            System.out.println("");
+            System.out.println();
         }
 
 
