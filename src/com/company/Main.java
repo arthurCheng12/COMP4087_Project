@@ -203,7 +203,6 @@ public class Main {
             if (hashMatchesDifficulty(newBlock.hash, difficulty)) {
                 // create Coinbase Transaction for block
                 newBlock.addTransaction(createCoinBaseTransaction(miner));
-                ;
                 System.out.println("Mined A Block wish hash : " + newBlock.hash + " new block difficulty :" + newBlock.difficulty);
                 return newBlock;
             }
