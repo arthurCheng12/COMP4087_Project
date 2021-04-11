@@ -6,8 +6,6 @@ import java.security.MessageDigest;
 import java.security.PublicKey;
 import java.util.*;
 
-import static com.company.utils.hashMatchesDifficulty;
-
 public class utils {
 
     public static String kCov(Key key) {

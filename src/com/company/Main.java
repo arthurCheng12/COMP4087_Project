@@ -249,7 +249,7 @@ public class Main {
 
     public static Transaction createCoinBaseTransaction(PublicKey miner) {
         try {
-            Transaction coinBasetransaction = new Transaction(coinbase.publicKey, miner, 50, null);
+            Transaction coinBasetransaction = new Transaction(coinbase.publicKey, miner, COINBASE_AMOUNT, null);
             coinBasetransaction.genSignature(coinbase.privateKey);
             coinBasetransaction.id = "0";
             coinBasetransaction.txOuts.add(new TxOut(coinBasetransaction.reciepient, coinBasetransaction.amount, coinBasetransaction.id));

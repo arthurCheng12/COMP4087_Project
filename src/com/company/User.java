@@ -12,12 +12,10 @@ import static com.company.ECDSAUtils.*;
 
 public class User {
 
-//    private double balance;
     public  PublicKey publicKey;
     public  PrivateKey privateKey;
     public  KeyPair keyPair;
 
-    // ben
     public HashMap<String, TxOut> UTXOs = new HashMap<String, TxOut>();
 
     public User() throws Exception {
@@ -30,8 +28,8 @@ public class User {
         double total = 0;
         for (Map.Entry<String, TxOut> item: Main.UTXOs.entrySet()){
             TxOut UTXO = item.getValue();
-            if(UTXO.isMine(publicKey)) { //if output belongs to me ( if coins belong to me )
-                UTXOs.put(UTXO.txOutId, UTXO); //add it to our list of unspent transactions.
+            if(UTXO.isMine(publicKey)) {
+                UTXOs.put(UTXO.txOutId, UTXO);
                 total += UTXO.amount ;
             }
         }
