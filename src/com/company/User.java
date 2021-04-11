@@ -15,44 +15,13 @@ public class User {
 //    private double balance;
     public  PublicKey publicKey;
     public  PrivateKey privateKey;
-    public  KeyPair keyPair = getKeyPair();
+    public  KeyPair keyPair;
 
     // ben
     public HashMap<String, TxOut> UTXOs = new HashMap<String, TxOut>();
 
-    // Him
-//    public User(double balance) throws Exception {
-//        this.balance = balance;
-//    }
-//
-//    public User() throws Exception {
-//        this.balance = 0;
-//    }
-//
-//    public double getBalance() {
-//        return balance;
-//    }
-//
-//    public void addBalance(double amount) {
-//        this.balance += amount;
-//    }
-//
-//    public void minusAmount(double amount) {
-//        this.balance -= amount;
-//    }
-//
-//    public PublicKey getPublicKey() {
-//        publicKey = keyPair.getPublic();
-//        return publicKey;
-//    }
-//
-//    public PrivateKey getPrivateKey() {
-//        privateKey = keyPair.getPrivate();
-//        return privateKey;
-//    }
-
-
     public User() throws Exception {
+        keyPair = getKeyPair();
         publicKey = keyPair.getPublic();
         privateKey = keyPair.getPrivate();
     }
