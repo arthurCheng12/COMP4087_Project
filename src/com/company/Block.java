@@ -57,7 +57,7 @@ public class Block {
         this.transactions = new ArrayList<Transaction>();
     }
 
-    public void setMerkleRootHash(String hash){
+    public void setMerkleRootHash(){
         this.merkleRootHash = generateMerkleTreeRoot(transactions);
     }
 

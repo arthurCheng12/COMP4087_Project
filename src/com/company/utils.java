@@ -37,14 +37,14 @@ public class utils {
         for (int i = 0; i < transactions.size(); i++) {
             tempTxList.add(transactions.get(i).id);
         }
-        System.out.println("tempTxList: " + tempTxList);
+//        System.out.println("tempTxList: " + tempTxList);
 
         List<String> newTxList = getNewTxList(tempTxList);
-        System.out.println("newTxList: " + newTxList);
+//        System.out.println("newTxList: " + newTxList);
 
         while (newTxList.size() != 1) {
             newTxList = getNewTxList(newTxList);
-            System.out.println("newTxList in while loop: " + newTxList);
+//            System.out.println("newTxList in while loop: " + newTxList);
         }
 
         String root = newTxList.get(0);

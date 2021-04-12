@@ -16,15 +16,15 @@ import static com.company.utils.*;
 import static java.lang.System.exit;
 
 public class Main {
-    static final int BLOCK_GENERATION_INTERVAL = 4;
-    static final int DIFFICULTY_ADJUSTMENT_INTERVAL = 2;
-    static final int COINBASE_AMOUNT = 50;
-    static final int TOTAL_COIN_SUPPLY = 21000000;
-    static ArrayList<Block> chain = new ArrayList<Block>();
-    public static HashMap<String, TxOut> UTXOs = new HashMap<String, TxOut>();
-    public static HashMap<String, User> Users = new HashMap<String, User>();
+        static final int BLOCK_GENERATION_INTERVAL = 4;
+        static final int DIFFICULTY_ADJUSTMENT_INTERVAL = 2;
+        static final int COINBASE_AMOUNT = 50;
+        static final int TOTAL_COIN_SUPPLY = 21000000;
+        static ArrayList<Block> chain = new ArrayList<Block>();
+        public static HashMap<String, TxOut> UTXOs = new HashMap<String, TxOut>();
+        public static HashMap<String, User> Users = new HashMap<String, User>();
 
-    static User coinbase;
+        static User coinbase;
 
 
     public static void main(String[] args) throws Exception {
@@ -186,6 +186,7 @@ public class Main {
     public static Block generateNextBlock(String miner, String blockData, int difficulty, int nonce) {
         Block previousBlock = chain.get(chain.size() - 1);
         int nextIndex = previousBlock.index + 1;
+        previousBlock.setMerkleRootHash();
         double nextTimestamp = new Date().getTime() / 1000;
         String nextHash = calculateHash(nextIndex + previousBlock.hash + nextTimestamp + blockData + nonce);
         Block newBlock = new Block(miner, nextIndex, nextHash, previousBlock.hash, nextTimestamp, blockData, difficulty, nonce);
@@ -260,5 +261,7 @@ public class Main {
             return null;
         }
     }
+
+
 
 }
